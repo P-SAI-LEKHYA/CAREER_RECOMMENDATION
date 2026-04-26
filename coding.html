@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Debug Quiz</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: rgba(255, 250, 244, 0.9);
+      --ink: #1d2a36;
+      --muted: #5f6f7f;
+      --accent: #d96c3f;
+      --accent-dark: #9f3f1c;
+      --good: #1f7a5c;
+      --bad: #b33a3a;
+      --card-shadow: 0 24px 60px rgba(36, 31, 28, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(217, 108, 63, 0.22), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(40, 86, 120, 0.18), transparent 30%),
+        linear-gradient(135deg, #efe4d6 0%, #f7f2ea 52%, #e7edf2 100%);
+      padding: 32px 16px;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app-shell {
+      width: min(920px, 100%);
+      margin: 0 auto;
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(29, 42, 54, 0.08);
+      border-radius: 28px;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 28px 28px 16px;
+      background: linear-gradient(135deg, rgba(29, 42, 54, 0.96), rgba(58, 85, 104, 0.92));
+      color: #fff8f1;
+    }
+
+    .hero-kicker {
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.05;
+    }
+
+    .hero p {
+      max-width: 680px;
+      margin: 14px 0 0;
+      line-height: 1.6;
+      color: rgba(255, 248, 241, 0.86);
+    }
+
+    .content {
+      padding: 24px 28px 30px;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .stat-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(29, 42, 54, 0.08);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .scenario {
+      border-radius: 22px;
+      background: white;
+      border: 1px solid rgba(29, 42, 54, 0.08);
+      padding: 22px;
+      box-shadow: 0 14px 30px rgba(29, 42, 54, 0.06);
+    }
+
+    .scenario-label {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(217, 108, 63, 0.12);
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .scenario h2 {
+      margin: 0 0 10px;
+      font-size: clamp(22px, 4vw, 30px);
+    }
+
+    .scenario-text {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    pre {
+      margin: 0 0 18px;
+      padding: 18px;
+      overflow-x: auto;
+      border-radius: 18px;
+      background: #18222c;
+      color: #edf3f8;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .question {
+      margin: 0 0 14px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .option-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option-button {
+      width: 100%;
+      text-align: left;
+      border: 1px solid rgba(29, 42, 54, 0.12);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: #fffdf9;
+      color: var(--ink);
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      cursor: pointer;
+    }
+
+    .option-button:hover:enabled {
+      transform: translateY(-1px);
+      border-color: rgba(217, 108, 63, 0.45);
+      box-shadow: 0 10px 24px rgba(217, 108, 63, 0.1);
+    }
+
+    .option-button:disabled {
+      cursor: default;
+      opacity: 0.92;
+    }
+
+    .option-button.correct {
+      border-color: rgba(31, 122, 92, 0.44);
+      background: rgba(31, 122, 92, 0.09);
+    }
+
+    .option-button.wrong {
+      border-color: rgba(179, 58, 58, 0.4);
+      background: rgba(179, 58, 58, 0.08);
+    }
+
+    .feedback {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 16px;
+      line-height: 1.6;
+      font-weight: 600;
+    }
+
+    .feedback.good {
+      background: rgba(31, 122, 92, 0.1);
+      color: var(--good);
+    }
+
+    .feedback.bad {
+      background: rgba(179, 58, 58, 0.09);
+      color: var(--bad);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .primary-button,
+    .secondary-button {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary-button {
+      background: var(--accent);
+      color: white;
+    }
+
+    .secondary-button {
+      background: rgba(29, 42, 54, 0.1);
+      color: var(--ink);
+    }
+
+    .result-card {
+      text-align: center;
+      padding: 34px 22px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(242, 236, 228, 0.98));
+      border: 1px solid rgba(29, 42, 54, 0.08);
+      box-shadow: 0 18px 34px rgba(29, 42, 54, 0.08);
+    }
+
+    .result-card h2 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 38px);
+    }
+
+    .result-card p {
+      max-width: 620px;
+      margin: 12px auto;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    @media (max-width: 640px) {
+      .hero,
+      .content {
+        padding: 20px;
+      }
+
+      .scenario {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const questions = [
+      {
+        id: 1,
+        title: "Login Button Does Nothing",
+        skill: "react-state",
+        roleNote: "Your teammate says the click happens, but the screen never changes.",
+        code: `function Login() {
+  let loggedIn = false;
+
+  function handleLogin() {
+    loggedIn = true;
+  }
+
+  return (
+    <div>
+      <p>{loggedIn ? "Welcome back!" : "Please log in"}</p>
+      <button onClick={handleLogin}>Log in</button>
+    </div>
+  );
+}`,
+        question: "What is the most likely bug?",
+        options: [
+          "The component uses a normal variable instead of React state",
+          "The button text should be inside a span",
+          "The ternary operator is invalid in JSX",
+          "The click handler must return true"
+        ],
+        answer: 0,
+        explanation: "React only re-renders when state or props change. A plain variable updates in memory, but the UI does not react to it."
+      },
+      {
+        id: 2,
+        title: "Products Never Appear",
+        skill: "async-data",
+        roleNote: "The API is fine, but the list stays empty in the browser.",
+        code: `useEffect(() => {
+  fetch("/api/products")
+    .then((response) => response.json());
+    .then((data) => setProducts(data));
+}, []);`,
+        question: "Which debugging clue points to the real problem?",
+        options: [
+          "The API path must be in capital letters",
+          "There is a stray semicolon that breaks the promise chain",
+          "useEffect can only fetch once per page",
+          "setProducts should be inside return"
+        ],
+        answer: 1,
+        explanation: "That semicolon ends the chain early, so the next .then is no longer attached to the fetch promise."
+      },
+      {
+        id: 3,
+        title: "Score Is Suddenly a String",
+        skill: "javascript-types",
+        roleNote: "A student types 5 into an input, but the total becomes 51 after adding 1.",
+        code: `const [score, setScore] = useState(0);
+
+function handleChange(event) {
+  setScore(event.target.value);
+}
+
+function addBonus() {
+  setScore(score + 1);
+}`,
+        question: "Why does `51` happen instead of `6`?",
+        options: [
+          "React blocks math inside event handlers",
+          "The state update is too fast for JavaScript",
+          "Input values are strings unless converted",
+          "useState only stores text"
+        ],
+        answer: 2,
+        explanation: "Browser input values come in as strings. When score becomes '5', adding 1 creates string concatenation and results in '51'."
+      },
+      {
+        id: 4,
+        title: "Mapped List Shows Weird Updates",
+        skill: "react-rendering",
+        roleNote: "Deleting one task makes a different task's content change on screen.",
+        code: `tasks.map((task, index) => (
+  <TaskCard key={index} task={task} />
+));`,
+        question: "What would a developer check first?",
+        options: [
+          "Whether the list items need stable unique keys instead of index",
+          "Whether map should be replaced with forEach",
+          "Whether TaskCard must be a class component",
+          "Whether keys should be random every render"
+        ],
+        answer: 0,
+        explanation: "Using the array index as a key can confuse React when items are removed or reordered. Stable IDs help React match the right component to the right data."
+      },
+      {
+        id: 5,
+        title: "Form Submits and Refreshes the Page",
+        skill: "events-forms",
+        roleNote: "The user clicks Save, but the browser reloads before the form logic finishes.",
+        code: `function handleSubmit(event) {
+  saveProfile();
+}
+
+return (
+  <form onSubmit={handleSubmit}>
+    <button type="submit">Save</button>
+  </form>
+);`,
+        question: "What is the most likely missing fix?",
+        options: [
+          "Call event.preventDefault() inside the submit handler",
+          "Change the button text to Save Now",
+          "Move the form into useEffect",
+          "Replace the form with a div"
+        ],
+        answer: 0,
+        explanation: "Forms submit by default and can refresh the page. Preventing the default behavior lets your custom submit logic run normally."
+      },
+      {
+        id: 6,
+        title: "Conditional Check Always Fails",
+        skill: "javascript-logic",
+        roleNote: "A user is 18, but the app still says they are underage.",
+        code: `const age = "18";
+
+if (age === 18) {
+  showAccess();
+} else {
+  showDenied();
+}`,
+        question: "Why does the condition fail?",
+        options: [
+          "The strict equality check compares string and number types",
+          "if statements cannot compare age values",
+          "showAccess must return true first",
+          "The constant should be inside a component"
+        ],
+        answer: 0,
+        explanation: "The value '18' is a string, while 18 is a number. Strict equality checks both value and type."
+      },
+      {
+        id: 7,
+        title: "Search Results Lag Behind Typing",
+        skill: "state-updates",
+        roleNote: "The latest typed character is missing from the search request.",
+        code: `function handleChange(event) {
+  setSearch(event.target.value);
+  fetchResults(search);
+}`,
+        question: "What debugging idea best explains the bug?",
+        options: [
+          "The input should use onClick instead of onChange",
+          "State updates are asynchronous, so search still holds the old value here",
+          "fetchResults can only run after a page reload",
+          "setSearch should be called twice"
+        ],
+        answer: 1,
+        explanation: "Right after setSearch, the state variable may still contain the previous value. Use event.target.value directly or react to the updated state in an effect."
+      },
+      {
+        id: 8,
+        title: "Cannot Read Property 'map' of Undefined",
+        skill: "defensive-data",
+        roleNote: "The page crashes before the API request finishes.",
+        code: `const [items, setItems] = useState();
+
+return (
+  <ul>
+    {items.map((item) => (
+      <li key={item.id}>{item.name}</li>
+    ))}
+  </ul>
+);`,
+        question: "What is the safest first improvement?",
+        options: [
+          "Initialize items as an empty array or guard before mapping",
+          "Replace map with filter",
+          "Wrap the code in try/catch inside JSX",
+          "Remove the key prop"
+        ],
+        answer: 0,
+        explanation: "Before the data loads, items is undefined. Starting with an empty array or checking that items exists prevents the crash."
+      }
+    ];
+
+    const improvementAreas = {
+      "react-state": {
+        label: "React state basics",
+        advice: "Practice when to use state instead of normal variables, and how re-rendering works after user actions."
+      },
+      "async-data": {
+        label: "Async data flow",
+        advice: "Work on promise chains, fetch handling, and tracing data from the API into UI state."
+      },
+      "javascript-types": {
+        label: "JavaScript types",
+        advice: "Review how strings and numbers behave, especially with form inputs and arithmetic."
+      },
+      "react-rendering": {
+        label: "Rendering lists",
+        advice: "Focus on React keys, list rendering, and how the UI stays matched to data during updates."
+      },
+      "events-forms": {
+        label: "Events and forms",
+        advice: "Practice browser default behavior, submit events, and when to prevent page refreshes."
+      },
+      "javascript-logic": {
+        label: "JavaScript logic",
+        advice: "Strengthen comparisons, conditionals, and debugging type mismatches in if statements."
+      },
+      "state-updates": {
+        label: "State timing",
+        advice: "Review how React state updates are scheduled and how to avoid reading stale values."
+      },
+      "defensive-data": {
+        label: "Defensive coding",
+        advice: "Practice handling loading states and null or undefined data before rendering."
+      }
+    };
+
+    function getResultMessage(score, total) {
+      const percent = (score / total) * 100;
+
+      if (percent === 100) {
+        return "Excellent debugging instincts. You spotted the kind of issues junior developers run into every day.";
+      }
+
+      if (percent >= 75) {
+        return "Strong work. You are thinking like a developer who checks state, data flow, and small syntax mistakes carefully.";
+      }
+
+      if (percent >= 50) {
+        return "Nice progress. You are building the right habits, and a bit more debugging practice will make these patterns feel natural.";
+      }
+
+      return "This is a good starting point. Debugging gets easier when you slow down, inspect the code path, and test one assumption at a time.";
+    }
+
+    function DebugQuiz() {
+      const [current, setCurrent] = useState(0);
+      const [selected, setSelected] = useState(null);
+      const [score, setScore] = useState(0);
+      const [showResult, setShowResult] = useState(false);
+      const [missedSkills, setMissedSkills] = useState([]);
+
+      const q = questions[current];
+      const hasAnswered = selected !== null;
+      const isCorrect = selected === q.answer;
+
+      function handleAnswer(index) {
+        if (hasAnswered) return;
+
+        setSelected(index);
+        if (index === q.answer) {
+          setScore((prev) => prev + 1);
+        } else {
+          setMissedSkills((prev) => [...prev, q.skill]);
+        }
+      }
+
+      function nextQuestion() {
+        if (current === questions.length - 1) {
+          setShowResult(true);
+          return;
+        }
+
+        setSelected(null);
+        setCurrent((prev) => prev + 1);
+      }
+
+      function restartQuiz() {
+        setCurrent(0);
+        setSelected(null);
+        setScore(0);
+        setShowResult(false);
+        setMissedSkills([]);
+      }
+
+      function getOptionClass(index) {
+        if (!hasAnswered) return "option-button";
+        if (index === q.answer) return "option-button correct";
+        if (index === selected) return "option-button wrong";
+        return "option-button";
+      }
+
+      if (showResult) {
+        const uniqueMissedSkills = [...new Set(missedSkills)];
+        const topAreas = uniqueMissedSkills.map((skill) => improvementAreas[skill]).filter(Boolean);
+
+        return (
+          <div className="app-shell">
+            <section className="hero">
+              <p className="hero-kicker">Student Debugging Challenge</p>
+              <h1>You just finished your first debugging shift.</h1>
+              <p>
+                Real developers spend a lot of time tracing state, reading clues,
+                and fixing tiny mistakes with big consequences. This quiz is meant
+                to build that instinct.
+              </p>
+            </section>
+
+            <section className="content">
+              <div className="result-card">
+                <h2>{score} / {questions.length}</h2>
+                <p>{getResultMessage(score, questions.length)}</p>
+                <p>
+                  Best next step: explain each bug out loud in your own words.
+                  If you can teach the fix, you really understand it.
+                </p>
+                {topAreas.length > 0 ? (
+                  <div
+                    style={{
+                      marginTop: "22px",
+                      textAlign: "left",
+                      background: "rgba(29, 42, 54, 0.05)",
+                      borderRadius: "18px",
+                      padding: "18px"
+                    }}
+                  >
+                    <h3 style={{ margin: "0 0 12px" }}>Where to improve next</h3>
+                    {topAreas.map((area) => (
+                      <p key={area.label} style={{ margin: "10px 0", color: "var(--ink)" }}>
+                        <strong>{area.label}:</strong> {area.advice}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      marginTop: "22px",
+                      background: "rgba(31, 122, 92, 0.1)",
+                      borderRadius: "18px",
+                      padding: "18px",
+                      color: "var(--good)"
+                    }}
+                  >
+                    <strong>No weak spots showed up in this round.</strong> Try adding harder bugs next, like closures, effects, or race conditions.
+                  </div>
+                )}
+                <div className="actions" style={{ justifyContent: "center" }}>
+                  <button className="primary-button" onClick={restartQuiz}>
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            </section>
+          </div>
+        );
+      }
+
+      return (
+        <div className="app-shell">
+          <section className="hero">
+            <p className="hero-kicker">Student Debugging Challenge</p>
+            <h1>Think like a software developer.</h1>
+            <p>
+              You are the student developer on bug-fix duty. Read each code
+              snippet, spot the likely issue, and build the mindset teams use when
+              debugging real apps.
+            </p>
+          </section>
+
+          <section className="content">
+            <div className="stats">
+              <div className="stat-pill">Question {current + 1} of {questions.length}</div>
+              <div className="stat-pill">Score: {score}</div>
+              <div className="stat-pill">Focus: Debugging</div>
+            </div>
+
+            <article className="scenario">
+              <span className="scenario-label">Bug Report #{q.id}</span>
+              <h2>{q.title}</h2>
+              <p className="scenario-text">{q.roleNote}</p>
+              <pre>{q.code}</pre>
+              <p className="question">{q.question}</p>
+
+              <div className="option-list">
+                {q.options.map((option, index) => (
+                  <button
+                    key={index}
+                    className={getOptionClass(index)}
+                    onClick={() => handleAnswer(index)}
+                    disabled={hasAnswered}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+
+              {hasAnswered && (
+                <div className={`feedback ${isCorrect ? "good" : "bad"}`}>
+                  <strong>{isCorrect ? "Correct." : "Not quite."}</strong> {q.explanation}
+                </div>
+              )}
+
+              {hasAnswered && (
+                <div className="actions">
+                  <button className="primary-button" onClick={nextQuestion}>
+                    {current === questions.length - 1 ? "See Results" : "Next Bug"}
+                  </button>
+                  <button className="secondary-button" onClick={restartQuiz}>
+                    Restart
+                  </button>
+                </div>
+              )}
+            </article>
+          </section>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<DebugQuiz />);
+  </script>
+</body>
+</html>
