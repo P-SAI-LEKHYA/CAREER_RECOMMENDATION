@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Simulation Hub</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Job Simulation Hub</p>
+          <h1>Practice Different Roles</h1>
+          <p class="intro">
+            Switch between a cooking task and a bedroom interior design task.
+            Each simulation gives you hands-on actions and a short performance review.
+          </p>
+        </div>
+        <div class="sim-switch">
+          <button id="showCookingBtn" class="accent">Cooking Simulation</button>
+          <button id="showInteriorBtn" class="secondary">Interior Designer</button>
+        </div>
+      </section>
+
+      <section id="cookingSim" class="simulation">
+        <section class="dashboard">
+          <article class="panel stats">
+            <div>
+              <span>Eggs Cracked</span>
+              <strong id="eggCount">0 / 2</strong>
+            </div>
+            <div>
+              <span>Heat</span>
+              <strong id="heatState">Off</strong>
+            </div>
+            <div>
+              <span>Cook Level</span>
+              <strong id="cookState">Raw</strong>
+            </div>
+            <div>
+              <span>Score</span>
+              <strong id="score">0</strong>
+            </div>
+          </article>
+
+          <article class="panel order-panel">
+            <div class="panel-header">
+              <h2>Task Brief</h2>
+              <span id="taskTag" class="tag">In Progress</span>
+            </div>
+            <div class="order-card">
+              <h3>Customer Order</h3>
+              <p>
+                Prepare a soft omelette using two eggs. Avoid leaving the gas on
+                too long and serve the plate cleanly.
+              </p>
+              <ul id="taskSteps" class="steps"></ul>
+            </div>
+          </article>
+
+          <article class="panel station-panel">
+            <div class="panel-header">
+              <h2>Cooking Station</h2>
+              <span id="stationStatus" class="tag warm">Ready</span>
+            </div>
+
+            <div class="kitchen-scene">
+              <div class="egg-tray">
+                <div class="egg" id="egg1"><span class="crack-mark"></span></div>
+                <div class="egg" id="egg2"><span class="crack-mark"></span></div>
+              </div>
+
+              <div class="stove">
+                <div id="flame" class="flame off"></div>
+                <div class="pan">
+                  <div id="omelette" class="omelette raw"></div>
+                </div>
+              </div>
+
+              <div class="plate-area">
+                <div class="plate">
+                  <div id="servedOmelette" class="served-omelette"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="meter-block">
+              <div class="progress-bar">
+                <div id="cookFill" class="progress-fill"></div>
+              </div>
+              <p id="progressLabel">Crack two eggs into the bowl to begin.</p>
+            </div>
+
+            <div class="actions">
+              <button id="crackBtn">Crack Egg</button>
+              <button id="gasBtn">Start Gas</button>
+              <button id="stopBtn">Stop Gas</button>
+              <button id="plateBtn" class="accent">Plate Omelette</button>
+            </div>
+          </article>
+
+          <article class="panel analysis-panel">
+            <div class="panel-header">
+              <h2>Performance Analysis</h2>
+              <span id="analysisTag" class="tag neutral">Waiting</span>
+            </div>
+            <div id="analysis" class="analysis">
+              Finish the omelette to see your cooking review.
+            </div>
+          </article>
+
+          <article class="panel log-panel">
+            <div class="panel-header">
+              <h2>Kitchen Notes</h2>
+              <span class="tag neutral">Live</span>
+            </div>
+            <div id="log" class="log"></div>
+          </article>
+        </section>
+      </section>
+
+      <section id="interiorSim" class="simulation hidden">
+        <section class="dashboard">
+          <article class="panel stats">
+            <div>
+              <span>Placed Items</span>
+              <strong id="placedCount">0 / 4</strong>
+            </div>
+            <div>
+              <span>Selected</span>
+              <strong id="selectedItem">None</strong>
+            </div>
+            <div>
+              <span>Style Score</span>
+              <strong id="interiorScore">0</strong>
+            </div>
+            <div>
+              <span>Review</span>
+              <strong id="interiorStatus">Planning</strong>
+            </div>
+          </article>
+
+          <article class="panel order-panel">
+            <div class="panel-header">
+              <h2>Design Brief</h2>
+              <span id="designTag" class="tag">Arrange Room</span>
+            </div>
+            <div class="order-card">
+              <h3>Bedroom Client</h3>
+              <p>
+                Build a simple bedroom in a plain empty room. Add the bed,
+                lamp, fan, stairs, and curtains in positions that feel natural and useful.
+              </p>
+              <div class="brief-notes">
+                <span>Bed in a resting zone</span>
+                <span>Curtains near window</span>
+                <span>Keep movement open</span>
+              </div>
+              <ul id="designSteps" class="steps"></ul>
+            </div>
+          </article>
+
+          <article class="panel station-panel">
+            <div class="panel-header">
+              <h2>Bedroom Layout</h2>
+              <span id="designStation" class="tag warm">Arrange Furniture</span>
+            </div>
+
+            <div class="design-layout">
+              <div class="furniture-bank">
+                <button class="furniture-btn furniture-bed" data-item="bed" draggable="true">
+                  <span class="furniture-icon"></span>
+                  <span class="furniture-copy">
+                    <strong>Bed</strong>
+                    <small>Main sleep area</small>
+                  </span>
+                </button>
+                <button class="furniture-btn furniture-lamp" data-item="lamp" draggable="true">
+                  <span class="furniture-icon"></span>
+                  <span class="furniture-copy">
+                    <strong>Lamp</strong>
+                    <small>Soft night lighting</small>
+                  </span>
+                </button>
+                <button class="furniture-btn furniture-fan" data-item="fan" draggable="true">
+                  <span class="furniture-icon"></span>
+                  <span class="furniture-copy">
+                    <strong>Fan</strong>
+                    <small>Ceiling comfort</small>
+                  </span>
+                </button>
+                <button class="furniture-btn furniture-stairs" data-item="stairs" draggable="true">
+                  <span class="furniture-icon"></span>
+                  <span class="furniture-copy">
+                    <strong>Stairs</strong>
+                    <small>Upper access point</small>
+                  </span>
+                </button>
+                <button class="furniture-btn furniture-curtains" data-item="curtains" draggable="true">
+                  <span class="furniture-icon"></span>
+                  <span class="furniture-copy">
+                    <strong>Curtains</strong>
+                    <small>Window treatment</small>
+                  </span>
+                </button>
+              </div>
+
+              <div class="room-board">
+                <div class="window-label">Window Wall</div>
+                <div class="door-label">Entry</div>
+                <button class="drop-spot spot-window-left" data-zone="window-left">Window Left</button>
+                <button class="drop-spot spot-window-center" data-zone="window-center">Window Center</button>
+                <button class="drop-spot spot-window-right" data-zone="window-right">Window Right</button>
+                <button class="drop-spot spot-center-left" data-zone="center-left">Center Left</button>
+                <button class="drop-spot spot-center" data-zone="center">Center</button>
+                <button class="drop-spot spot-center-right" data-zone="center-right">Center Right</button>
+                <button class="drop-spot spot-floor-left" data-zone="floor-left">Floor Left</button>
+                <button class="drop-spot spot-floor-center" data-zone="floor-center">Floor Center</button>
+                <button class="drop-spot spot-floor-right" data-zone="floor-right">Floor Right</button>
+                <div id="placedItemsLayer" class="placed-items-layer"></div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="submitDesignBtn" class="accent">Submit Design</button>
+              <button id="resetDesignBtn">Reset Bedroom</button>
+            </div>
+          </article>
+
+          <article class="panel analysis-panel">
+            <div class="panel-header">
+              <h2>Design Analysis</h2>
+              <span id="designAnalysisTag" class="tag neutral">Waiting</span>
+            </div>
+            <div id="designAnalysis" class="analysis">
+              Arrange the furniture and submit the layout to see your review.
+            </div>
+          </article>
+
+          <article class="panel log-panel">
+            <div class="panel-header">
+              <h2>Designer Notes</h2>
+              <span class="tag neutral">Live</span>
+            </div>
+            <div id="designLog" class="log"></div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
