@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Simulation</title>
+
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --surface: rgba(255, 250, 242, 0.9);
+      --card: #eef2f7;
+      --text: #1f2937;
+      --muted: #667085;
+      --primary: #0f766e;
+      --secondary: #c2410c;
+      --border: rgba(31, 41, 55, 0.08);
+      --shadow: 0 22px 50px rgba(75, 85, 99, 0.12);
+      --good: #166534;
+      --good-bg: #dcfce7;
+      --mid: #9a3412;
+      --mid-bg: #ffedd5;
+      --bad: #991b1b;
+      --bad-bg: #fee2e2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Aptos", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.22), transparent 32%),
+        linear-gradient(135deg, #f5efe4, #fcfaf5 55%, #efe1c7);
+      color: var(--text);
+      padding: 28px 18px;
+    }
+
+    .shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+      border-radius: 32px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 30px;
+      border-radius: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.1);
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+
+    .top-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(194, 65, 12, 0.1);
+      color: var(--secondary);
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .scenario-card {
+      padding: 22px;
+      border-radius: 22px;
+      background: #edf0f6;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .scenario-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(148, 163, 184, 0.14);
+    }
+
+    .scenario-card.active {
+      border-color: rgba(15, 118, 110, 0.35);
+      background: linear-gradient(180deg, rgba(220, 252, 231, 0.56), rgba(255, 255, 255, 0.95));
+    }
+
+    .scenario-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.2rem;
+    }
+
+    .scenario-card p {
+      color: #4b5563;
+    }
+
+    .workspace {
+      display: none;
+      margin-top: 26px;
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 34px rgba(148, 163, 184, 0.12);
+    }
+
+    .workspace.active {
+      display: block;
+    }
+
+    .workspace h2 {
+      margin: 0 0 10px;
+      font-size: 1.55rem;
+      letter-spacing: -0.03em;
+    }
+
+    .scenario-box {
+      margin-top: 14px;
+      padding: 18px;
+      border-radius: 18px;
+      background: #f8fafc;
+      border: 1px solid rgba(31, 41, 55, 0.08);
+      color: #374151;
+      line-height: 1.7;
+    }
+
+    .requirements {
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: #fff7ed;
+      border: 1px solid rgba(194, 65, 12, 0.16);
+    }
+
+    .requirements strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #9a3412;
+    }
+
+    .requirements ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #7c2d12;
+    }
+
+    label {
+      display: block;
+      margin: 20px 0 8px;
+      font-weight: 700;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(31, 41, 55, 0.12);
+      font: inherit;
+      color: var(--text);
+      background: white;
+      outline: none;
+    }
+
+    .code-mode {
+      font-family: Consolas, "Courier New", monospace;
+      min-height: 260px;
+      white-space: pre;
+    }
+
+    textarea:focus {
+      border-color: rgba(15, 118, 110, 0.4);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      border-radius: 16px;
+      padding: 13px 18px;
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--primary), #22c55e);
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 14px 28px rgba(15, 118, 110, 0.18);
+    }
+
+    .ghost-btn {
+      background: white;
+      color: var(--text);
+      border: 1px solid rgba(31, 41, 55, 0.08);
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 18px;
+      line-height: 1.7;
+    }
+
+    .result.good {
+      background: var(--good-bg);
+      color: var(--good);
+    }
+
+    .result.mid {
+      background: var(--mid-bg);
+      color: var(--mid);
+    }
+
+    .result.bad {
+      background: var(--bad-bg);
+      color: var(--bad);
+    }
+
+    .result strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.05rem;
+    }
+
+    .feedback-list {
+      margin-top: 10px;
+      padding-left: 18px;
+    }
+
+    .feedback-list li {
+      margin-bottom: 6px;
+    }
+
+    .preview-box {
+      display: none;
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 20px;
+      background: rgba(15, 118, 110, 0.06);
+      border: 1px solid rgba(15, 118, 110, 0.16);
+    }
+
+    .preview-box.active {
+      display: block;
+    }
+
+    .preview-box h3 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .preview-frame {
+      width: 100%;
+      min-height: 260px;
+      margin-top: 12px;
+      border: 1px solid rgba(31, 41, 55, 0.12);
+      border-radius: 16px;
+      background: white;
+    }
+
+    .task-box {
+      display: none;
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 20px;
+      background: rgba(194, 65, 12, 0.06);
+      border: 1px solid rgba(194, 65, 12, 0.14);
+    }
+
+    .task-box.active {
+      display: block;
+    }
+
+    .task-box h3 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .task-box ul {
+      margin: 12px 0 0;
+      padding-left: 18px;
+      color: #7c2d12;
+      line-height: 1.8;
+    }
+
+    .back-btn {
+      margin-top: 22px;
+      background: white;
+      color: var(--text);
+      border: 1px solid rgba(31, 41, 55, 0.08);
+    }
+
+    code {
+      font-family: Consolas, monospace;
+      background: rgba(15, 23, 42, 0.06);
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .panel {
+        padding: 20px;
+      }
+
+      .shell {
+        padding: 10px;
+      }
+
+      .actions button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+    <section class="panel">
+      <div class="eyebrow">Interactive Simulation</div>
+      <h1 id="title">Job Simulation</h1>
+      <p id="intro">Select a situation and respond like a real professional.</p>
+
+      <div class="top-meta">
+        <div id="domainLabel" class="chip" hidden></div>
+        <div class="chip">Choose a scenario, then answer in text</div>
+      </div>
+
+      <div id="scenarioList" class="grid"></div>
+
+      <div id="workspace" class="workspace">
+        <h2 id="selectedTitle">Scenario</h2>
+        <p id="selectedDetail"></p>
+        <div id="scenarioBox" class="scenario-box"></div>
+        <div id="requirementsBox" class="requirements" hidden></div>
+
+        <label id="answerLabel" for="userAnswer">Your response</label>
+        <textarea id="userAnswer" placeholder="Write how you would handle this situation. Try to explain your thinking clearly and in steps."></textarea>
+
+        <div class="actions">
+          <button class="primary-btn" onclick="judgeAnswer()">Judge my response</button>
+          <button class="ghost-btn" onclick="fillStarter()">Use a starter answer</button>
+        </div>
+
+        <div id="resultBox"></div>
+
+        <div id="previewBox" class="preview-box">
+          <h3>App Preview</h3>
+          <p>Your submitted code is rendered below as a live app preview.</p>
+          <iframe id="previewFrame" class="preview-frame" title="Program output preview"></iframe>
+        </div>
+
+        <div id="taskBox" class="task-box">
+          <h3>Practice Tasks</h3>
+          <p>Now try improving your program with these small frontend changes.</p>
+          <ul id="taskList"></ul>
+        </div>
+      </div>
+
+      <button class="back-btn" onclick="goBack()">Back</button>
+    </section>
+  </div>
+
+  <script src="job-simulations.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const job = params.get("job");
+
+    const title = document.getElementById("title");
+    const intro = document.getElementById("intro");
+    const scenarioList = document.getElementById("scenarioList");
+    const workspace = document.getElementById("workspace");
+    const selectedTitle = document.getElementById("selectedTitle");
+    const selectedDetail = document.getElementById("selectedDetail");
+    const scenarioBox = document.getElementById("scenarioBox");
+    const resultBox = document.getElementById("resultBox");
+    const domainLabel = document.getElementById("domainLabel");
+    const userAnswer = document.getElementById("userAnswer");
+    const answerLabel = document.getElementById("answerLabel");
+    const requirementsBox = document.getElementById("requirementsBox");
+    const previewBox = document.getElementById("previewBox");
+    const previewFrame = document.getElementById("previewFrame");
+    const taskBox = document.getElementById("taskBox");
+    const taskList = document.getElementById("taskList");
+
+    const selected = simulationData[job];
+    const selectedDomain = Object.values(simulationDomains).find((domain) => domain.jobs[job]);
+    let activeTask = null;
+    const isCodeSimulation = job === "web";
+
+    if (selected) {
+      title.innerText = selected.title;
+      intro.innerText = selected.intro;
+
+      if (selectedDomain) {
+        domainLabel.hidden = false;
+        domainLabel.innerText = `${selectedDomain.label} domain`;
+      }
+
+      scenarioList.innerHTML = selected.tasks.map((task, index) => `
+        <div class="scenario-card" onclick="selectScenario(${index})" id="scenario-${index}">
+          <h3>${task.title}</h3>
+          <p>${task.detail}</p>
+        </div>
+      `).join("");
+
+      if (selected.tasks.length > 0) {
+        selectScenario(0);
+      }
+    } else {
+      title.innerText = "Simulation Not Found";
+      intro.innerHTML = `Open this page with a valid <code>job</code> parameter, for example <code>simulation.html?job=ias</code>.`;
+      scenarioList.innerHTML = "";
+    }
+
+    function selectScenario(index) {
+      activeTask = selected.tasks[index];
+      document.querySelectorAll(".scenario-card").forEach((card) => card.classList.remove("active"));
+      document.getElementById(`scenario-${index}`).classList.add("active");
+
+      selectedTitle.innerText = activeTask.title;
+      selectedDetail.innerText = activeTask.detail;
+      scenarioBox.innerText = activeTask.scenario;
+      userAnswer.value = "";
+      resultBox.innerHTML = "";
+      previewBox.classList.remove("active");
+      previewFrame.srcdoc = "";
+      taskBox.classList.remove("active");
+      taskList.innerHTML = "";
+
+      if (isCodeSimulation) {
+        answerLabel.innerText = "Your code";
+        userAnswer.placeholder = "Paste or write your HTML, CSS, and JavaScript here.";
+        userAnswer.classList.add("code-mode");
+        userAnswer.value = "";
+        renderRequirements(activeTask);
+      } else {
+        answerLabel.innerText = "Your response";
+        userAnswer.placeholder = "Write how you would handle this situation. Try to explain your thinking clearly and in steps.";
+        userAnswer.classList.remove("code-mode");
+        requirementsBox.hidden = true;
+      }
+
+      workspace.classList.add("active");
+      workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function fillStarter() {
+      if (!activeTask) {
+        return;
+      }
+
+      if (isCodeSimulation) {
+        userAnswer.value = activeTask.starterCode || "";
+        return;
+      }
+
+      userAnswer.value = "First I would understand the full situation with facts and ground information. Then I would take immediate action to control the problem, coordinate the right departments or teams, and also prepare a longer-term plan so the issue does not repeat. I would communicate clearly with the people affected and monitor the outcome.";
+    }
+
+    function judgeAnswer() {
+      if (!activeTask) {
+        resultBox.innerHTML = `<div class="result bad"><strong>Select a scenario first.</strong>Choose one situation above before submitting your response.</div>`;
+        return;
+      }
+
+      if (isCodeSimulation) {
+        judgeCodeAnswer();
+        return;
+      }
+
+      const answer = userAnswer.value.trim().toLowerCase();
+      const rubric = activeTask.rubric || {};
+      let score = 0;
+      const matchedAreas = [];
+      const missingAreas = [];
+
+      Object.entries(rubric).forEach(([area, keywords]) => {
+        const matched = keywords.some((keyword) => answer.includes(keyword));
+        if (matched) {
+          score += 2;
+          matchedAreas.push(area);
+        } else {
+          missingAreas.push(area);
+        }
+      });
+
+      if (answer.length < 80) {
+        score -= 2;
+      }
+
+      let tone = "bad";
+      let heading = "Needs more officer-level structure";
+      let summary = "Your answer should be clearer, more practical, and better organized.";
+
+      if (score >= 6) {
+        tone = "good";
+        heading = "Strong response";
+        summary = "Your answer shows structured thinking, action, and situational judgment.";
+      } else if (score >= 3) {
+        tone = "mid";
+        heading = "Decent response";
+        summary = "Your answer has a good start, but it is missing some important parts.";
+      }
+
+      const goodLabels = {
+        focus: "problem understanding",
+        action: "immediate action",
+        planning: "long-term planning",
+        people: "coordination and people impact",
+        user: "user-centered thinking"
+      };
+
+      const strengths = matchedAreas.length
+        ? matchedAreas.map((area) => `<li>You covered <strong>${goodLabels[area] || area}</strong>.</li>`).join("")
+        : "<li>Your answer needs more clear decision-making points.</li>";
+
+      const improvements = missingAreas.length
+        ? missingAreas.map((area) => `<li>Add more about <strong>${goodLabels[area] || area}</strong>.</li>`).join("")
+        : "<li>You covered the major dimensions well.</li>";
+
+      resultBox.innerHTML = `
+        <div class="result ${tone}">
+          <strong>${heading}</strong>
+          <div>${summary}</div>
+          <div style="margin-top:10px;"><strong>Score:</strong> ${Math.max(score, 0)} / 8</div>
+          <ul class="feedback-list">${strengths}</ul>
+          <ul class="feedback-list">${improvements}</ul>
+        </div>
+      `;
+    }
+
+    function renderRequirements(task) {
+      const required = task.requiredElements || [];
+      const bonus = task.bonusElements || [];
+
+      const requiredList = required.map((item) => `<li>${item.label}</li>`).join("");
+      const bonusList = bonus.map((item) => `<li>${item.label}</li>`).join("");
+
+      requirementsBox.hidden = false;
+      requirementsBox.innerHTML = `
+        <strong>What the scanner will look for</strong>
+        <ul>${requiredList}</ul>
+        ${bonus.length ? `<strong style="margin-top:12px;">Bonus points</strong><ul>${bonusList}</ul>` : ""}
+      `;
+    }
+
+    function judgeCodeAnswer() {
+      const code = userAnswer.value.trim().toLowerCase();
+      const required = activeTask.requiredElements || [];
+      const bonus = activeTask.bonusElements || [];
+      const foundRequired = [];
+      const missedRequired = [];
+      const foundBonus = [];
+      let score = 0;
+
+      required.forEach((item) => {
+        const matched = item.keywords.some((keyword) => code.includes(keyword.toLowerCase()));
+        if (matched) {
+          foundRequired.push(item.label);
+          score += 2;
+        } else {
+          missedRequired.push(item.label);
+        }
+      });
+
+      bonus.forEach((item) => {
+        const matched = item.keywords.some((keyword) => code.includes(keyword.toLowerCase()));
+        if (matched) {
+          foundBonus.push(item.label);
+          score += 1;
+        }
+      });
+
+      if (code.length < 120) {
+        score -= 2;
+      }
+
+      let tone = "bad";
+      let heading = "The code is missing important pieces";
+      let summary = "Your submission needs more of the expected structure, styling, or interaction elements.";
+
+      if (score >= Math.max(7, required.length * 2 - 1)) {
+        tone = "good";
+        heading = "Strong submission";
+        summary = "Your code includes most of the expected elements and looks close to a solid solution.";
+      } else if (score >= Math.max(4, required.length)) {
+        tone = "mid";
+        heading = "Decent submission";
+        summary = "Your code has a good base, but some important elements are still missing.";
+      }
+
+      const foundList = foundRequired.length
+        ? foundRequired.map((item) => `<li>Found <strong>${item}</strong>.</li>`).join("")
+        : "<li>The scanner could not find the core required elements yet.</li>";
+
+      const missedList = missedRequired.length
+        ? missedRequired.map((item) => `<li>Add <strong>${item}</strong>.</li>`).join("")
+        : "<li>You included all required elements.</li>";
+
+      const bonusLine = foundBonus.length
+        ? `<ul class="feedback-list">${foundBonus.map((item) => `<li>Bonus detected: <strong>${item}</strong>.</li>`).join("")}</ul>`
+        : "";
+
+      resultBox.innerHTML = `
+        <div class="result ${tone}">
+          <strong>${heading}</strong>
+          <div>${summary}</div>
+          <div style="margin-top:10px;"><strong>Score:</strong> ${Math.max(score, 0)}</div>
+          <ul class="feedback-list">${foundList}</ul>
+          <ul class="feedback-list">${missedList}</ul>
+          ${bonusLine}
+        </div>
+      `;
+      renderProgramOutput(userAnswer.value);
+      renderPracticeTasks();
+    }
+
+    function renderProgramOutput(code) {
+      const trimmed = code.trim();
+      const hasFullDocument = /<html|<!doctype/i.test(trimmed);
+      const wrappedCode = hasFullDocument
+        ? trimmed
+        : `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body {
+                margin: 0;
+                padding: 24px;
+                font-family: Arial, sans-serif;
+                background: #ffffff;
+                color: #111827;
+              }
+            </style>
+          </head>
+          <body>
+            ${trimmed}
+          </body>
+          </html>
+        `;
+
+      previewFrame.srcdoc = wrappedCode;
+      previewBox.classList.add("active");
+      previewBox.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function renderPracticeTasks() {
+      if (!isCodeSimulation) {
+        return;
+      }
+
+      const tasks = [
+        "Add an input box to the current UI.",
+        "Change the font size of the main heading.",
+        "Change the background color of the page or main section."
+      ];
+
+      if (activeTask.title.toLowerCase().includes("contact form")) {
+        tasks[0] = "Add one more input box, such as a phone number or subject field.";
+      } else if (activeTask.title.toLowerCase().includes("feature")) {
+        tasks[1] = "Increase the font size of the card titles.";
+      }
+
+      taskList.innerHTML = tasks.map((task) => `<li>${task}</li>`).join("");
+      taskBox.classList.add("active");
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+  </script>
+</body>
+</html>

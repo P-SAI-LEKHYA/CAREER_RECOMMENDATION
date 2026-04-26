@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Frontend Designer Simulation</title>
+    <link rel="stylesheet" href="styles (1).css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Interactive Practice Studio</p>
+          <h1>Frontend Designer Simulation</h1>
+          <p class="hero-copy">
+            Edit the starter code, inspect the live preview, and submit your
+            design assignment for an automatic completion report.
+          </p>
+        </div>
+        <div class="hero-scorecard">
+          <span>Assignment Focus</span>
+          <strong>Visual polish + UI changes</strong>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="brief-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Brief</p>
+              <h2>Client Request</h2>
+            </div>
+            <button id="resetBtn" class="ghost-button" type="button">
+              Reset Starter Code
+            </button>
+          </div>
+
+          <div class="brief-card">
+            <p>
+              The client wants a sharper hero section for their product launch
+              page. Make the requested tweaks in the code editor, keep checking
+              the preview, and submit when you are satisfied.
+            </p>
+
+            <ul class="task-list" id="taskList">
+              <li data-task="headline">
+                Change the headline text to
+                <code>Design faster with Aurora UI</code>
+              </li>
+              <li data-task="button">
+                Change the primary button label to
+                <code>Start Free Trial</code>
+              </li>
+              <li data-task="accent">
+                Update the accent color to <code>#ff6b6b</code>
+              </li>
+              <li data-task="radius">
+                Increase the hero card border radius to at least
+                <code>32px</code>
+              </li>
+              <li data-task="badge">
+                Add a badge with the text <code>New Release</code>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="editor-preview-grid">
+          <section class="editor-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Editor</p>
+                <h2>Default Code Snippet</h2>
+              </div>
+              <button id="previewBtn" class="primary-button" type="button">
+                Update Preview
+              </button>
+            </div>
+
+            <div class="editor-stack">
+              <label class="editor-label" for="htmlEditor">HTML</label>
+              <textarea id="htmlEditor" spellcheck="false"></textarea>
+              <label class="editor-label" for="cssEditor">CSS</label>
+              <textarea id="cssEditor" spellcheck="false"></textarea>
+            </div>
+          </section>
+
+          <section class="preview-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Preview</p>
+                <h2>Live Canvas</h2>
+              </div>
+              <span class="preview-pill">Realtime visual check</span>
+            </div>
+            <iframe
+              id="previewFrame"
+              title="Live preview for assignment"
+            ></iframe>
+          </section>
+        </section>
+
+        <section class="submission-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Evaluation</p>
+              <h2>Submit Assignment</h2>
+            </div>
+            <button id="submitBtn" class="primary-button" type="button">
+              Submit for Analysis
+            </button>
+          </div>
+
+          <div id="report" class="report empty">
+            <p>
+              Submit the edited assignment to see completed tasks, missed tasks,
+              and a short design analysis report.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script_copy.js"></script>
+  </body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IPS Simulation</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #e5ecf3, #ffffff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      background: #f5f3ef;
+      padding: 40px;
+      border-radius: 25px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    h1 { font-size: 40px; color: #1f2937; }
+    p { color: #6b7280; }
+
+    .tag {
+      background: #f4d1b5;
+      padding: 8px 15px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+
+    .card {
+      background: #e5e7eb;
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 15px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      background: #d1d5db;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+    }
+
+    .btn {
+      margin-top: 10px;
+      padding: 10px 20px;
+      border-radius: 15px;
+      border: none;
+      background: #6366f1;
+      color: white;
+      cursor: pointer;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+
+    .good { background: #dcfce7; color: #065f46; }
+    .mid { background: #fef9c3; color: #92400e; }
+    .bad { background: #fee2e2; color: #991b1b; }
+
+    .back-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      border-radius: 15px;
+      border: none;
+      background: #e5e7eb;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>IPS Officer Simulation</h1>
+  <p>Select a situation and respond like a real IPS officer</p>
+
+  <div class="tag">Civil Services domain</div>
+
+  <div class="card" onclick="loadScenario('crowd')">
+    <h3>Assess a security situation</h3>
+    <p>A festival crowd is growing fast and tension is rising.</p>
+  </div>
+
+  <div class="card" onclick="loadScenario('protest')">
+    <h3>Deploy a response plan</h3>
+    <p>A protest has blocked a road and panic is increasing.</p>
+  </div>
+
+  <div class="card" onclick="loadScenario('report')">
+    <h3>Report outcomes</h3>
+    <p>An incident is controlled but public demands answers.</p>
+  </div>
+
+  <div id="simulationArea"></div>
+
+  <button class="back-btn" onclick="goBack()">Back</button>
+
+</div>
+
+<script>
+
+function loadScenario(type) {
+
+  let text = "";
+
+  if (type === "crowd") {
+    text = "A large crowd is becoming uncontrollable. What will you do?";
+  }
+
+  else if (type === "protest") {
+    text = "A protest is blocking roads and panic is spreading. How will you handle it?";
+  }
+
+  else {
+    text = "Public is demanding explanation after an incident. What will you communicate?";
+  }
+
+  document.getElementById("simulationArea").innerHTML = `
+    <div class="card">
+      <p><b>Scenario:</b> ${text}</p>
+
+      <textarea id="userAnswer" placeholder="Type your response..."></textarea>
+
+      <button class="btn" onclick="judgeAnswer()">Submit</button>
+    </div>
+
+    <div id="resultBox"></div>
+  `;
+}
+
+function judgeAnswer() {
+
+  let answer = document.getElementById("userAnswer").value.toLowerCase();
+  let score = 0;
+
+  // Analysis
+  if (answer.includes("assess") || answer.includes("analyze")) score += 2;
+
+  // Action
+  if (answer.includes("control") || answer.includes("manage") || answer.includes("deploy")) score += 2;
+
+  // Safety
+  if (answer.includes("safety") || answer.includes("public")) score += 2;
+
+  // Communication
+  if (answer.includes("inform") || answer.includes("communicate")) score += 2;
+
+  if (answer.length < 40) score -= 2;
+
+  let result = "";
+
+  if (score >= 6) {
+    result = `<div class="result good">✅ Excellent decision-making and leadership.</div>`;
+  }
+  else if (score >= 3) {
+    result = `<div class="result mid">⚠ Moderate response. Needs clarity and planning.</div>`;
+  }
+  else {
+    result = `<div class="result bad">❌ Weak response. Lacks control and responsibility.</div>`;
+  }
+
+  document.getElementById("resultBox").innerHTML = result;
+}
+
+function goBack() {
+  window.history.back();
+}
+
+</script>
+
+</body>
+</html>
