@@ -87,8 +87,8 @@ const ui = {
   submitDesignBtn: document.getElementById("submitDesignBtn"),
   resetDesignBtn: document.getElementById("resetDesignBtn"),
   furnitureButtons: [...document.querySelectorAll(".furniture-btn")],
-  roomZones: [...document.querySelectorAll(".room-zone")],
   dropSpots: [...document.querySelectorAll(".drop-spot")],
+  roomBoard: document.querySelector(".room-board"),
   placedItemsLayer: document.getElementById("placedItemsLayer"),
   restartBtn: document.getElementById("restartBtn"),
 };
@@ -383,6 +383,45 @@ function stopDraggingItem() {
   renderInterior();
 }
 
+function clearDropHighlights() {
+  ui.dropSpots.forEach(spot => spot.classList.remove("drag-over"));
+}
+
+function getNearestZone(clientX, clientY) {
+  let nearestZone = null;
+  let nearestDistance = Infinity;
+
+  ui.dropSpots.forEach(spot => {
+    const rect = spot.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const distance = Math.hypot(clientX - centerX, clientY - centerY);
+
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestZone = spot.dataset.zone;
+    }
+  });
+
+  return nearestZone;
+}
+
+function highlightNearestZone(clientX, clientY) {
+  const zone = getNearestZone(clientX, clientY);
+  clearDropHighlights();
+
+  if (!zone) {
+    return null;
+  }
+
+  const spot = ui.dropSpots.find(item => item.dataset.zone === zone);
+  if (spot) {
+    spot.classList.add("drag-over");
+  }
+
+  return zone;
+}
+
 function placeFurniture(zone) {
   if (interiorState.finished || !interiorState.selectedItem) return;
   const existingItem = interiorState.placements[zone];
@@ -517,27 +556,40 @@ ui.furnitureButtons.forEach(button => button.addEventListener("dragstart", event
 }));
 ui.furnitureButtons.forEach(button => button.addEventListener("dragend", () => {
   stopDraggingItem();
+  clearDropHighlights();
 }));
 ui.dropSpots.forEach(spot => spot.addEventListener("click", () => placeFurniture(spot.dataset.zone)));
 ui.dropSpots.forEach(spot => spot.addEventListener("dragover", event => {
   if (interiorState.finished) return;
   event.preventDefault();
-  spot.classList.add("drag-over");
+  highlightNearestZone(event.clientX, event.clientY);
   event.dataTransfer.dropEffect = "move";
 }));
 ui.dropSpots.forEach(spot => spot.addEventListener("dragleave", () => {
-  spot.classList.remove("drag-over");
+  clearDropHighlights();
 }));
-ui.dropSpots.forEach(spot => spot.addEventListener("drop", event => {
+ui.roomBoard.addEventListener("dragover", event => {
   if (interiorState.finished) return;
   event.preventDefault();
-  const item = event.dataTransfer.getData("text/plain");
-  if (item) {
-    interiorState.selectedItem = item;
-    placeFurniture(spot.dataset.zone);
+  highlightNearestZone(event.clientX, event.clientY);
+  event.dataTransfer.dropEffect = "move";
+});
+ui.roomBoard.addEventListener("dragleave", event => {
+  if (!ui.roomBoard.contains(event.relatedTarget)) {
+    clearDropHighlights();
   }
-  spot.classList.remove("drag-over");
-}));
+});
+ui.roomBoard.addEventListener("drop", event => {
+  if (interiorState.finished) return;
+  event.preventDefault();
+  const item = event.dataTransfer.getData("text/plain") || interiorState.draggedItem || interiorState.selectedItem;
+  const zone = highlightNearestZone(event.clientX, event.clientY);
+  if (item && zone) {
+    interiorState.selectedItem = item;
+    placeFurniture(zone);
+  }
+  clearDropHighlights();
+});
 ui.submitDesignBtn.addEventListener("click", submitDesign);
 ui.resetDesignBtn.addEventListener("click", resetDesign);
 
